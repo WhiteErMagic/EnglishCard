@@ -5,15 +5,14 @@ from telebot import types, TeleBot, custom_filters
 from telebot.storage import StateMemoryStorage
 from telebot.handler_backends import State, StatesGroup
 from DataBase import DataBase
+import os
 
 
 known_users = []
 userStep = {}
-buttons = []
-new_word = ''
 
 state_storage = StateMemoryStorage()
-token_bot = '7145600203:AAHqtA0fNyg7IeCzu0qY_XStqDstdw2yl-4'
+token_bot = os.getenv('TOKENBOT')
 bot = TeleBot(token_bot, state_storage=state_storage)
 print('Start telegram bot...')
 
@@ -59,15 +58,12 @@ def get_user_step(uid):
 @bot.message_handler(commands=['cards', 'start'])
 def create_cards(message):
     cid = message.chat.id
-    global new_word
     if cid not in known_users:
         known_users.append(cid)
         userStep[cid] = UserSteps.START
-        new_word = ''
         bot.send_message(cid, "Hello, stranger, let study English...")
     markup = types.ReplyKeyboardMarkup(row_width=2)
 
-    global buttons
     buttons = []
     target_word = data_base.select_word(cid)
     translate = data_base.select_translation(target_word, cid)
@@ -99,9 +95,6 @@ def next_cards(message):
 
 @bot.message_handler(func=lambda message: message.text == Command.DELETE_WORD)
 def delete_word(message):
-    #with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-    #print(data['target_word'])  # удалить из БД
-    global buttons
     cid = message.chat.id
     userStep[cid] = UserSteps.DELETE_WORD
     next_btn = types.KeyboardButton(Command.NEXT)
@@ -114,7 +107,6 @@ def delete_word(message):
 
 @bot.message_handler(func=lambda message: message.text == Command.ADD_WORD)
 def add_word(message):
-    global buttons
     cid = message.chat.id
     userStep[cid] = UserSteps.ADD_WORD
     next_btn = types.KeyboardButton(Command.NEXT)
@@ -127,10 +119,7 @@ def add_word(message):
 
 @bot.message_handler(func=lambda message: message.text == Command.CANCEL)
 def cancel(message):
-    global buttons
-    global new_word
     cid = message.chat.id
-    new_word = ''
     userStep[cid] = UserSteps.START
     data_base.cancel()
     next_btn = types.KeyboardButton(Command.NEXT)
@@ -147,20 +136,18 @@ def message_reply(message):
     text = message.text
     cid = message.chat.id
     markup = types.ReplyKeyboardMarkup(row_width=2)
-    global buttons
-    global new_word
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         target_word = data['target_word']
         if userStep[cid] == UserSteps.ADD_WORD:
-            new_word = text
+            data['target_word'] = text
             next_btn = types.KeyboardButton(Command.NEXT)
             cancel_add = types.KeyboardButton(Command.CANCEL)
             buttons = [next_btn, cancel_add]
             userStep[cid] = UserSteps.ADD_TRANSLATE
             markup.add(*buttons)
-            bot.send_message(message.chat.id, 'Перевод для ' + new_word, reply_markup=markup)
+            bot.send_message(message.chat.id, 'Перевод для ' + data['target_word'], reply_markup=markup)
         elif userStep[cid] == UserSteps.ADD_TRANSLATE:
-            data_base.add_word(cid, new_word, text)
+            data_base.add_word(cid, data['target_word'], text)
             userStep[cid] = UserSteps.START
             next_btn = types.KeyboardButton(Command.NEXT)
             add_word_btn = types.KeyboardButton(Command.ADD_WORD)
@@ -189,6 +176,10 @@ def message_reply(message):
                 buttons = [next_btn, add_word_btn, delete_word_btn]
                 hint = show_hint(*hint_text)
             else:
+                next_btn = types.KeyboardButton(Command.NEXT)
+                add_word_btn = types.KeyboardButton(Command.ADD_WORD)
+                delete_word_btn = types.KeyboardButton(Command.DELETE_WORD)
+                buttons = [next_btn, add_word_btn, delete_word_btn]
                 for btn in buttons:
                     if btn.text == text:
                         btn.text = text + '❌'

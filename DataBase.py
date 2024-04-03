@@ -1,17 +1,13 @@
 import random
 
-import psycopg2
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 import os
-from models import Words, Translation, StatusWords
+from models import Words, Translation, StatusWords, create_tables
 
 
 class DataBase:
-    os.environ['PASSWORD'] = '1234'
-    os.environ['NAMEBASE'] = 'learning_foreign_language'
-    os.environ['LOGIN'] = 'postgres'
 
     PASSWORD = os.getenv('PASSWORD')
     NAMEBASE = os.getenv('NAMEBASE')
@@ -27,6 +23,7 @@ class DataBase:
         self.session = Session()
         self.WORD_ADDED = 1
         self.WORD_DELETED = 0
+        create_tables(self.engine, self.session)
 
     def select_translation(self, word, cid):
         # StatusWords для хранения признаков добавления и удаления пользователем
