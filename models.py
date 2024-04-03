@@ -37,6 +37,13 @@ class StatusWords(Base):
 
 
 def create_tables(engine, session):
+    """
+        Инициализирует таблицы
+
+        Args:
+            engine (engine): engine
+            session (Session):  сессия
+    """
     words = Table(
         'words', meta,
         sq.Column('id', sq.Integer, primary_key=True, autoincrement=True, nullable=True),

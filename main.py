@@ -57,6 +57,12 @@ def get_user_step(uid):
 
 @bot.message_handler(commands=['cards', 'start'])
 def create_cards(message):
+    """
+        Начало работы
+
+        Args:
+            message (message):  сообщение
+    """
     cid = message.chat.id
     if cid not in known_users:
         known_users.append(cid)
@@ -90,11 +96,23 @@ def create_cards(message):
 
 @bot.message_handler(func=lambda message: message.text == Command.NEXT)
 def next_cards(message):
+    """
+        Следующее слово
+
+        Args:
+            message (message):  сообщение
+    """
     create_cards(message)
 
 
 @bot.message_handler(func=lambda message: message.text == Command.DELETE_WORD)
 def delete_word(message):
+    """
+        Удалить слово
+
+        Args:
+            message (message):  сообщение
+    """
     cid = message.chat.id
     userStep[cid] = UserSteps.DELETE_WORD
     next_btn = types.KeyboardButton(Command.NEXT)
@@ -107,6 +125,12 @@ def delete_word(message):
 
 @bot.message_handler(func=lambda message: message.text == Command.ADD_WORD)
 def add_word(message):
+    """
+        Добавить слово
+
+        Args:
+            message (message):  сообщение
+    """
     cid = message.chat.id
     userStep[cid] = UserSteps.ADD_WORD
     next_btn = types.KeyboardButton(Command.NEXT)
@@ -119,6 +143,12 @@ def add_word(message):
 
 @bot.message_handler(func=lambda message: message.text == Command.CANCEL)
 def cancel(message):
+    """
+        Отмена добавления или удаления слова
+
+        Args:
+            message (message):  сообщение
+    """
     cid = message.chat.id
     userStep[cid] = UserSteps.START
     data_base.cancel()
@@ -133,6 +163,12 @@ def cancel(message):
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def message_reply(message):
+    """
+        Обработка полученного сообщения
+
+        Args:
+            message (message):  сообщение
+    """
     text = message.text
     cid = message.chat.id
     markup = types.ReplyKeyboardMarkup(row_width=2)

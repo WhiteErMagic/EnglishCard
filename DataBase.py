@@ -26,6 +26,16 @@ class DataBase:
         create_tables(self.engine, self.session)
 
     def select_translation(self, word, cid):
+        """
+            Получение перевода слова
+
+            Args:
+                word (str):  слово для перевода
+                cid (ind): идентификатор пользователя
+
+            Returns:
+                str: перевод слова
+        """
         # StatusWords для хранения признаков добавления и удаления пользователем
         # слов, что бы управлять отображением этих слов
         # первый запрос для слов, добавленных пользователем
@@ -54,6 +64,15 @@ class DataBase:
         return value
 
     def select_word(self, cid):
+        """
+            Получение случайного слова
+
+            Args:
+                cid (ind): идентификатор пользователя
+
+            Returns:
+                str: слово
+        """
         # StatusWords для хранения признаков добавления и удаления пользователем
         # слов, что бы управлять отображением этих слов
         # первый запрос для слов, добавленных пользователем
@@ -86,6 +105,16 @@ class DataBase:
         self.session.close()
 
     def select_examples(self, cid, word):
+        """
+            Получение 4 варианта перевода слова
+
+            Args:
+                cid (ind): идентификатор пользователя
+                word (str):  слово для перевода
+
+            Returns:
+                list: список из 4 переводов
+        """
         examples = [word]
 
         # StatusWords для хранения признаков добавления и удаления пользователем
@@ -126,7 +155,14 @@ class DataBase:
         return examples
 
     def add_word(self, cid, word, translate):
+        """
+            Добавляет новое слова
 
+            Args:
+                cid (ind): идентификатор пользователя
+                word (str):  новое слово
+                translate (str):  перевод
+        """
         result = self.session.query(Words).filter(Words.word == word).all()
 
         if len(result) == 0:
@@ -160,6 +196,13 @@ class DataBase:
         self.session.rollback()
 
     def delete_word(self, cid, word):
+        """
+            Удаляет слово
+
+            Args:
+                cid (ind): идентификатор пользователя
+                word (str):  слово
+        """
         result = self.session.query(Words).filter(Words.word == word).all()
         if len(result) > 0:
             word = result[0]
